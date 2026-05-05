@@ -45,7 +45,6 @@
     <div class="card" style="width: 95%; max-width: 600px; border: 2px solid var(--neon-blue); max-height: 90vh; overflow-y: auto;">
         <h2 style="color: var(--neon-blue); text-align: center; font-family: 'JetBrains Mono';">ARCANO LOGÍSTICA</h2>
         
-        <!-- AQUÍ PEGASTE EL INSTRUCTIVO -->
         <div class="scroll-box" style="max-height: 250px; overflow-y: auto; background: #1a1d29; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--neon-blue); color: #eee; font-size: 0.85rem; line-height: 1.6;">
             <p>* Entrá a la <a href="https://console.firebase.google.com/" target="_blank" style="color: var(--neon-blue); font-weight: bold;">Consola Firebase aquí</a> y dale a "Añadir proyecto".</p>
             <p>* Poné el nombre de tu empresa (ej: "EL NOMBRE QUE DESEES") y CLIC EN EL BOTÓN CONTINUAR.</p>
@@ -57,8 +56,6 @@
             <p>* Finaliza haciendo clic en IR A LA CONSOLA.</p>
             <p>* Para cargar los tres datos de configuración que te pide el sistema solo debe buscar en la información que copiaste en el apartado anterior y sacar el API KEY, EL PROJECT ID y el URL, y listo ya tienes habilitado tu propia base de datos con una interface de uso espectacular!</p>
         </div>
-        <!-- FIN DEL INSTRUCTIVO -->
-
         <input type="text" id="cfg-key" placeholder="FIREBASE API KEY">
         <input type="text" id="cfg-id" placeholder="PROJECT ID">
         <input type="text" id="cfg-url" placeholder="DATABASE URL">
@@ -67,8 +64,6 @@
         <button class="btn btn-neon" onclick="saveConfig()">ACTIVAR PLATAFORMA</button>
     </div>
 </div>
-
-<!-- Resto del código (app-container, etc.) -->
 
 <div class="app-container">
     <div class="sidebar">
@@ -79,7 +74,7 @@
         </div>
 
         <div class="content">
-            <!-- PANEL CHOFER -->
+            
             <div id="tab-operador" class="tab-pane active">
                 <div id="form-driver" class="card">
                     <label>ID Chofer (Recuperar datos)</label>
@@ -115,8 +110,7 @@
                 </div>
             </div>
 
-            <!-- PANEL ADMIN -->
-            <div id="tab-admin" class="tab-pane">
+              <div id="tab-admin" class="tab-pane">
                 <div class="card" style="border-color: var(--neon-blue);">
                     <h4 style="margin:0 0 10px 0;">Despacho de Ruta</h4>
                     <select id="adm-sel-patente"><option value="">Seleccione Unidad...</option></select>
@@ -160,7 +154,6 @@
                 <button class="btn btn-danger" onclick="hardReset()">🛑 RESETEO TOTAL</button>
             </div>
 
-            <!-- CHAT Y DONACIONES -->
             <div class="card" style="margin-top: auto;">
                 <label>Canal Logístico</label>
                 <div id="chat-box"></div>
