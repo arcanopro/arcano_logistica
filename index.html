@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Arcano_Logística | Control Central Profesional</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --neon-blue: #00d4ff; --dark-core: #0a0b10; --panel-bg: #14161f; --text-gray: #a0a0a0; --danger: #ff4b2b; --success: #22c55e; --warning: #facc15; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--dark-core); color: white; overflow: hidden; }
+        .app-container { display: grid; grid-template-columns: 380px 1fr; height: 100vh; }
+        .sidebar { background: var(--panel-bg); border-right: 1px solid #222; display: flex; flex-direction: column; z-index: 10; overflow: hidden; }
+        .brand { padding: 15px; border-bottom: 1px solid #222; text-align: center; font-family: 'JetBrains Mono', monospace; color: var(--neon-blue); font-size: 1.1rem; }
+        .tabs { display: flex; background: #000; }
+        .tabs button { flex: 1; padding: 12px; background: none; border: none; color: var(--text-gray); cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.7rem; font-weight: bold; }
+        .tabs button.active { color: var(--neon-blue); border-bottom-color: var(--neon-blue); background: #14161f; }
+        .content { padding: 15px; flex-grow: 1; overflow-y: auto; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .card { background: #1c1f2b; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #333; }
+        label { display: block; font-size: 0.7rem; color: var(--text-gray); margin-bottom: 5px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 10px; background: #0a0b10; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-neon { background: var(--neon-blue); color: #000; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: black; }
+        .btn-paypal { background: #003087; color: white; margin-bottom: 8px; }
+        .btn-mp { background: #009ee3; color: white; }
+        #chat-box { height: 160px; background: #0a0b10; border-radius: 5px; overflow-y: auto; padding: 10px; margin-bottom: 10px; font-size: 0.8rem; border: 1px solid #222; }
+        #map { height: 100%; width: 100%; background: #000; }
+        .setup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark-core); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+
+<body>
+
+<div id="setup-screen" class="setup-overlay">
+    <div class="card" style="width: 95%; max-width: 600px; border: 2px solid var(--neon-blue); max-height: 90vh; overflow-y: auto;">
+        <h2 style="color: var(--neon-blue); text-align: center; font-family: 'JetBrains Mono';">ARCANO LOGÍSTICA</h2>
+        
+        <!-- AQUÍ PEGASTE EL INSTRUCTIVO -->
+        <div class="scroll-box" style="max-height: 250px; overflow-y: auto; background: #1a1d29; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--neon-blue); color: #eee; font-size: 0.85rem; line-height: 1.6;">
+            <p>* Entrá a la <a href="https://console.firebase.google.com/" target="_blank" style="color: var(--neon-blue); font-weight: bold;">Consola Firebase aquí</a> y dale a "Añadir proyecto".</p>
+            <p>* Poné el nombre de tu empresa (ej: "EL NOMBRE QUE DESEES") y CLIC EN EL BOTÓN CONTINUAR.</p>
+            <p>* Deshabilita por el momento la opción de Google Analytics de este proyecto y dale CREAR PROYECTO.</p>
+            <p>* Aparecerá el nombre de tu logística con la información que tu proyecto ya esta creado. Dale clik a CONTINUAR.</p>
+            <p>* Se abrirá un panel repartido.</p>
+            <p>* En el menú izquierdo, buscá "Categoría del producto" y elegí "Realtime Database". Dale a "Crear base de datos", deja por defecto Ubicación: Estados Unidos (us-central) y elegí "Modo de prueba" y dale click a HABILITAR para que funcione al instante.</p>
+            <p>* Hacé clic en el engranaje "⚙️ Configuración" (arriba a la izquierda), ingresa a General y bajá hasta "Tus apps", elegí el icono "&lt;/&gt;" Web, registrá un nombre: (Ej. Arcano_Logistica), no tildes ninguna opción y dale a REGISTRAR APP y copia los datos en un bloc de notas o word que se generaron.</p>
+            <p>* Finaliza haciendo clic en IR A LA CONSOLA.</p>
+            <p>* Para cargar los tres datos de configuración que te pide el sistema solo debe buscar en la información que copiaste en el apartado anterior y sacar el API KEY, EL PROJECT ID y el URL, y listo ya tienes habilitado tu propia base de datos con una interface de uso espectacular!</p>
+        </div>
+        <!-- FIN DEL INSTRUCTIVO -->
+
+        <input type="text" id="cfg-key" placeholder="FIREBASE API KEY">
+        <input type="text" id="cfg-id" placeholder="PROJECT ID">
+        <input type="text" id="cfg-url" placeholder="DATABASE URL">
+        <label>Contraseña Maestra</label>
+        <input type="password" id="cfg-pass" placeholder="Defina su clave aquí">
+        <button class="btn btn-neon" onclick="saveConfig()">ACTIVAR PLATAFORMA</button>
+    </div>
+</div>
+
+<!-- Resto del código (app-container, etc.) -->
+
+<div class="app-container">
+    <div class="sidebar">
+        <div class="brand">ARCANO_LOGÍSTICA</div>
+        <div class="tabs">
+            <button id="btn-tab-chofer" class="active" onclick="showTab('tab-operador')">CHOFER</button>
+            <button id="btn-tab-admin" onclick="accesoAdmin()">ADMINISTRADOR</button>
+        </div>
+
+        <div class="content">
+            <!-- PANEL CHOFER -->
+            <div id="tab-operador" class="tab-pane active">
+                <div id="form-driver" class="card">
+                    <label>ID Chofer (Recuperar datos)</label>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="text" id="drv-id-input" placeholder="Ej: AR-101" style="margin:0">
+                        <button class="btn btn-neon" style="width: 80px;" onclick="searchDriverID()">BUSCAR</button>
+                    </div>
+                    <hr style="border-color: #333; margin-bottom: 15px;">
+                    <label>Registro Chofer</label>
+                    <input type="text" id="drv-nombre" placeholder="Nombre">
+                    <input type="text" id="drv-patente" placeholder="Patente" oninput="this.value = this.value.toUpperCase()">
+                    <input type="tel" id="drv-tel" placeholder="Teléfono">
+                    <label>Grupo</label>
+                    <select id="drv-grupo"><option value="">Cargando grupos...</option></select>
+                    <button class="btn btn-neon" onclick="connectDriver()">REGISTRAR Y ACTIVAR</button>
+                </div>
+
+                <div id="driver-active" style="display:none;">
+                    <div class="card" style="text-align: center; border-color: var(--neon-blue);">
+                        <small>ID ASIGNADO:</small> <h3 id="lbl-id-chofer" style="margin:5px 0; color: var(--neon-blue);">---</h3>
+                    </div>
+                    <div id="route-card" class="card" style="border: 2px solid var(--neon-blue); display:none;">
+                        <h4 style="margin:0; color:var(--neon-blue)">📋 HOJA DE RUTA</h4>
+                        <div id="route-details" style="font-size:0.8rem; margin-top:8px;"></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                        <button class="btn btn-warning" onclick="reportarLogistica('Llegué')">Llegué</button>
+                        <button class="btn" style="background: #a855f7; color: white;" onclick="reportarLogistica('Entregando')">Entregando</button>
+                        <button class="btn btn-success" onclick="reportarLogistica('Finalizado')">Finalizado</button>
+                        <button class="btn btn-neon" onclick="reportarNormalidad()">Regreso</button>
+                    </div>
+                    <button class="btn btn-danger" onclick="sendEmergency('PANICO')">🚨 BOTÓN DE PÁNICO</button>
+                </div>
+            </div>
+
+            <!-- PANEL ADMIN -->
+            <div id="tab-admin" class="tab-pane">
+                <div class="card" style="border-color: var(--neon-blue);">
+                    <h4 style="margin:0 0 10px 0;">Despacho de Ruta</h4>
+                    <select id="adm-sel-patente"><option value="">Seleccione Unidad...</option></select>
+                    <input type="text" id="adm-ruta-dest" placeholder="Dirección Cliente">
+                    <textarea id="adm-ruta-carga" placeholder="Detalles de Carga" rows="2"></textarea>
+                    <button class="btn btn-neon" onclick="assignRoute()">ENVIAR RUTA</button>
+                </div>
+                
+                <div class="card">
+                    <h4 style="margin:0 0 10px 0;">Gestión de Transportistas</h4>
+                    <label>Buscar y Eliminar Chofer (ID)</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" id="adm-del-chofer-id" placeholder="Ej: AR-101" style="margin:0">
+                        <button class="btn btn-danger" style="width: 50px;" onclick="deleteDriver()">✖</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h4 style="margin:0 0 10px 0;">Gestión de Grupos</h4>
+                    <label>Nuevo Grupo</label>
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="text" id="new-group-name" placeholder="Nombre Grupo" style="margin:0">
+                        <button class="btn btn-neon" style="width: 50px;" onclick="createGroup()">+</button>
+                    </div>
+                    <label>Eliminar Grupo</label>
+                    <div style="display: flex; gap: 5px;">
+                        <select id="adm-del-grupo-sel" style="margin:0"><option value="">Cargando...</option></select>
+                        <button class="btn btn-danger" style="width: 50px;" onclick="deleteGroup()">✖</button>
+                    </div>
+                </div>
+
+                <div class="card" style="border-color: var(--warning);">
+                    <h4 style="margin:0 0 10px 0;">Seguridad</h4>
+                    <label>Cambiar Contraseña</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="password" id="new-admin-pass" placeholder="Nueva Clave" style="margin:0">
+                        <button class="btn btn-neon" style="width: 80px;" onclick="changeAdminPass()">GUARDAR</button>
+                    </div>
+                </div>
+                <button class="btn btn-warning" onclick="wipeDatabase()" style="margin-bottom:10px;">🧹 LIMPIAR OPERATIVA</button>
+                <button class="btn btn-danger" onclick="hardReset()">🛑 RESETEO TOTAL</button>
+            </div>
+
+            <!-- CHAT Y DONACIONES -->
+            <div class="card" style="margin-top: auto;">
+                <label>Canal Logístico</label>
+                <div id="chat-box"></div>
+                <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+                    <input type="text" id="chat-input" placeholder="Mensaje..." style="margin:0">
+                    <button class="btn btn-neon" style="width: 45px;" onclick="enviarMensaje()">➤</button>
+                </div>
+                
+                <label>Colaborar con el Proyecto</label>
+                <button class="btn btn-paypal" onclick="window.open('https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=7XYHVYCZC4734&item_name=Soporte+Proyecto+Arcano&currency_code=USD', '_blank')">
+                    💙 PayPal (Donación)
+                </button>
+                <button class="btn btn-mp" onclick="copiarAlias()">
+                    💳 Mercado Pago (Alias: arcano.pro)
+                </button>
+            </div>
+            
+            <div style="text-align: center; padding: 10px; font-size: 0.7rem; color: #444; font-weight: bold;">
+                Desarrollado por Marcelo Sterli
+            </div>
+        </div>
+    </div>
+    <div id="map"></div>
+</div>
+
+<script>
+    let db, map, markers = {}, currentPatente = "", currentChoferID = "", usuarioNombre = "Usuario";
+    const config = JSON.parse(localStorage.getItem('arcano_cfg'));
+    const truckIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/744/744465.png', iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -16] });
+
+    if(config) {
+        document.getElementById('setup-screen').style.display = 'none';
+        firebase.initializeApp(config);
+        db = firebase.database();
+        window.onload = () => { initMap(); listenGroups(); listenFleet(); listenChat(); };
+    }
+
+    function saveConfig() {
+        const c = { apiKey: document.getElementById('cfg-key').value.trim(), projectId: document.getElementById('cfg-id').value.trim(), databaseURL: document.getElementById('cfg-url').value.trim() };
+        const pass = document.getElementById('cfg-pass').value.trim();
+        if(!c.apiKey || !pass) return alert("Complete los datos");
+        firebase.initializeApp(c);
+        firebase.database().ref('config/adminPass').set(pass).then(() => {
+            localStorage.setItem('arcano_cfg', JSON.stringify(c));
+            location.reload();
+        });
+    }
+
+    function copiarAlias() {
+        const alias = "arcano.pro";
+        const cvu = "0000003100003732990021";
+        navigator.clipboard.writeText(alias).then(() => {
+            alert("Alias copiado: " + alias + "\nCVU: " + cvu);
+        });
+    }
+
+    function accesoAdmin() {
+        db.ref('config/adminPass').once('value', snap => {
+            if(prompt("Contraseña:") === snap.val()) { usuarioNombre = "Administrador"; showTab('tab-admin'); }
+            else alert("Acceso denegado");
+        });
+    }
+
+    function changeAdminPass() {
+        const n = document.getElementById('new-admin-pass').value.trim();
+        if(n) db.ref('config/adminPass').set(n).then(() => alert("Clave actualizada"));
+    }
+
+    function initMap() {
+        map = L.map('map').setView([-31.63, -60.70], 12);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    }
+
+    function showTab(id) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // --- GESTIÓN DE TRANSPORTISTAS ---
+    function searchDriverID() {
+        const id = document.getElementById('drv-id-input').value.trim().toUpperCase();
+        db.ref('conductores/' + id).once('value', snap => {
+            if(snap.exists()) {
+                const d = snap.val();
+                document.getElementById('drv-nombre').value = d.nombre;
+                document.getElementById('drv-patente').value = d.patente;
+                document.getElementById('drv-tel').value = d.tel;
+                alert("ID Reconocido");
+            } else alert("ID no encontrado");
+        });
+    }
+
+    function deleteDriver() {
+        const id = document.getElementById('adm-del-chofer-id').value.trim().toUpperCase();
+        if(!id) return alert("Ingrese un ID");
+        if(confirm(`¿Eliminar al transportista ${id} de la base de datos?`)) {
+            db.ref('conductores/' + id).remove().then(() => {
+                alert("Transportista eliminado");
+                document.getElementById('adm-del-chofer-id').value = "";
+            });
+        }
+    }
+
+    function connectDriver() {
+        const u = { nombre: document.getElementById('drv-nombre').value, patente: document.getElementById('drv-patente').value, tel: document.getElementById('drv-tel').value, grupo: document.getElementById('drv-grupo').value };
+        if(!u.patente || !u.nombre) return alert("Faltan datos");
+        currentPatente = u.patente;
+        usuarioNombre = u.nombre;
+        const idExistente = document.getElementById('drv-id-input').value.trim().toUpperCase();
+        currentChoferID = idExistente || "AR-" + Math.floor(100 + Math.random() * 900);
+        db.ref('conductores/' + currentChoferID).set(u).then(() => {
+            document.getElementById('lbl-id-chofer').innerText = currentChoferID;
+            document.getElementById('form-driver').style.display = 'none';
+            document.getElementById('driver-active').style.display = 'block';
+            startTracking({...u, choferID: currentChoferID});
+            listenMyRoute(u.patente);
+        });
+    }
+
+    function startTracking(u) {
+        navigator.geolocation.watchPosition(p => {
+            const speed = p.coords.speed ? (p.coords.speed * 3.6).toFixed(0) : 0;
+            db.ref(`flota/${u.patente}`).update({ ...u, lat: p.coords.latitude, lng: p.coords.longitude, velocidad: speed, ts: new Date().toLocaleTimeString(), alerta: "Normal" });
+        }, null, { enableHighAccuracy: true });
+    }
+
+    function listenFleet() {
+        db.ref('flota').on('value', snap => {
+            const data = snap.val();
+            const sel = document.getElementById('adm-sel-patente');
+            sel.innerHTML = '<option value="">Seleccione Unidad...</option>';
+            for(let id in data) {
+                const v = data[id];
+                sel.innerHTML += `<option value="${id}">${id} (${v.nombre})</option>`;
+                const pop = `<b>${v.patente}</b><br>Chofer: ${v.nombre}<br>ID: ${v.choferID || 'N/A'}<br>Velocidad: ${v.velocidad || 0} km/h<br><a href="tel:${v.tel}" style="display:block; background:#22c55e; color:white; text-align:center; padding:5px; margin-top:5px; text-decoration:none; border-radius:4px;">📞 LLAMAR</a>`;
+                if(markers[id]) markers[id].setLatLng([v.lat, v.lng]).getPopup().setContent(pop);
+                else markers[id] = L.marker([v.lat, v.lng], {icon: truckIcon}).addTo(map).bindPopup(pop);
+            }
+        });
+    }
+
+    function reportarLogistica(msg) {
+        if(currentPatente) {
+            db.ref(`flota/${currentPatente}`).update({ estado: msg });
+            db.ref('mensajes').push({ nombre: "SISTEMA", texto: `🚚 Unidad ${currentPatente}: ${msg}` });
+        }
+    }
+
+    function reportarNormalidad() {
+        if(currentPatente) {
+            db.ref(`flota/${currentPatente}`).update({ alerta: "Normal", estado: "De Regreso" });
+            db.ref('mensajes').push({ nombre: "SISTEMA", texto: `✅ Unidad ${currentPatente} informa normalidad y regreso.` });
+        }
+    }
+
+    function sendEmergency(t) {
+        if(currentPatente) {
+            db.ref(`flota/${currentPatente}`).update({ alerta: t });
+            db.ref('mensajes').push({ nombre: "🚨 ALERTA", texto: `${t} en unidad ${currentPatente}!` });
+        }
+    }
+
+    function enviarMensaje() {
+        const t = document.getElementById('chat-input').value;
+        if(t) { db.ref('mensajes').push({ nombre: usuarioNombre, texto: t }); document.getElementById('chat-input').value = ''; }
+    }
+
+    function listenChat() {
+        db.ref('mensajes').limitToLast(15).on('child_added', s => {
+            const m = s.val(); const div = document.createElement('div'); div.className = 'msg';
+            div.innerHTML = `<b>${m.nombre}:</b> ${m.texto}`;
+            const box = document.getElementById('chat-box');
+            box.appendChild(div); box.scrollTop = box.scrollHeight;
+        });
+    }
+
+    // --- GESTIÓN DE GRUPOS ---
+    function createGroup() {
+        const n = document.getElementById('new-group-name').value.trim();
+        if(n) db.ref('config/grupos').push(n).then(() => document.getElementById('new-group-name').value = '');
+    }
+
+    function deleteGroup() {
+        const key = document.getElementById('adm-del-grupo-sel').value;
+        if(!key) return alert("Seleccione un grupo");
+        if(confirm("¿Eliminar este grupo de la lista?")) {
+            db.ref('config/grupos/' + key).remove().then(() => alert("Grupo eliminado"));
+        }
+    }
+
+    function listenGroups() {
+        db.ref('config/grupos').on('value', snap => {
+            const s = document.getElementById('drv-grupo');
+            const d = document.getElementById('adm-del-grupo-sel');
+            s.innerHTML = '<option value="">Seleccionar Grupo...</option>';
+            d.innerHTML = '<option value="">Elegir para eliminar...</option>';
+            snap.forEach(c => { 
+                s.innerHTML += `<option value="${c.val()}">${c.val()}</option>`;
+                d.innerHTML += `<option value="${c.key}">${c.val()}</option>`;
+            });
+        });
+    }
+
+    function assignRoute() {
+        const pat = document.getElementById('adm-sel-patente').value;
+        const dest = document.getElementById('adm-ruta-dest').value;
+        const carg = document.getElementById('adm-ruta-carga').value;
+        if(pat && dest) db.ref(`rutas/${pat}`).set({ destino: dest, carga: carg });
+    }
+
+    function listenMyRoute(pat) {
+        db.ref(`rutas/${pat}`).on('value', snap => {
+            const r = snap.val(); const card = document.getElementById('route-card');
+            if(r) { card.style.display = 'block'; document.getElementById('route-details').innerHTML = `<b>Destino:</b> ${r.destino}<br><b>Carga:</b> ${r.carga}`; }
+            else card.style.display = 'none';
+        });
+    }
+
+    function wipeDatabase() {
+        if(confirm("¿Limpiar base? (Mantiene clave y grupos)")) {
+            db.ref('flota').remove(); db.ref('mensajes').remove(); db.ref('rutas').remove();
+        }
+    }
+
+    function hardReset() {
+        db.ref('config/adminPass').once('value', snap => {
+            if(prompt("Confirme clave para RESET TOTAL:") === snap.val()) {
+                db.ref('/').remove().then(() => { localStorage.clear(); location.reload(); });
+            } else alert("Clave Incorrecta");
+        });
+    }
+</script>
+</body>
+</html>
